@@ -1,0 +1,43 @@
+version: 2
+
+sources:
+  - name: bronze
+    schema: bronze
+    description: "Raw Business Central data — written by the Fabric ingestion notebook."
+
+    tables:
+      - name: customer
+        description: "Raw BC customer master data."
+        columns:
+          - name: id
+            description: "BC internal GUID."
+            tests: [not_null, unique]
+          - name: number
+            description: "Customer No. (user-visible key)."
+            tests: [not_null]
+
+      - name: item
+        description: "Raw BC item (product) master data."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: number
+            tests: [not_null]
+
+      - name: sales_order_header
+        description: "Raw BC sales order headers."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: number
+            tests: [not_null]
+          - name: customer_id
+            tests: [not_null]
+
+      - name: sales_order_line
+        description: "Raw BC sales order lines."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: document_id
+            tests: [not_null]

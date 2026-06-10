@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: dim_customer
+    description: "Cleaned customer dimension from Business Central."
+    columns:
+      - name: customer_guid
+        tests: [not_null, unique]
+      - name: customer_no
+        tests: [not_null]
+      - name: customer_name
+        tests: [not_null]
+
+  - name: dim_item
+    description: "Cleaned item/product dimension from Business Central."
+    columns:
+      - name: item_guid
+        tests: [not_null, unique]
+      - name: item_no
+        tests: [not_null]
+
+  - name: fact_sales_order_header
+    description: "Cleaned sales order headers."
+    columns:
+      - name: order_guid
+        tests: [not_null, unique]
+      - name: customer_guid
+        tests: [not_null]
+      - name: order_date
+        tests: [not_null]
+
+  - name: fact_sales_order_line
+    description: "Cleaned sales order lines — one row per order/line combination."
+    columns:
+      - name: line_guid
+        tests: [not_null, unique]
+      - name: order_guid
+        tests: [not_null]

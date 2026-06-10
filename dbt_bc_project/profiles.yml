@@ -1,0 +1,24 @@
+# profiles.yml — Fabric Warehouse connection for dbt
+#
+# dbt-fabric adapter:  pip install dbt-fabric
+# Docs: https://docs.getdbt.com/docs/core/connect-data-platform/fabric-setup
+#
+# Store secrets in environment variables — never hard-code them here.
+
+fabric_warehouse:
+  target: fabric
+  outputs:
+    fabric:
+      type: fabric
+      driver: "ODBC Driver 18 for SQL Server"
+      server: "{{ env_var('FABRIC_SERVER') }}"       # <workspace>.datawarehouse.fabric.microsoft.com
+      port: 1433
+      database: "{{ env_var('FABRIC_DATABASE') }}"   # Warehouse name
+      schema: dbo                                    # dbt's default schema; overridden per layer
+      authentication: ServicePrincipal
+      tenant_id:     "{{ env_var('FABRIC_TENANT_ID') }}"
+      client_id:     "{{ env_var('FABRIC_CLIENT_ID') }}"
+      client_secret: "{{ env_var('FABRIC_CLIENT_SECRET') }}"
+      threads: 4
+      connect_timeout: 30
+      retries: 3

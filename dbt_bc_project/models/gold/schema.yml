@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: gold_sales_daily
+    description: "Daily sales aggregated by date, country, currency, and salesperson."
+    columns:
+      - name: order_date
+        tests: [not_null]
+
+  - name: gold_customer_performance
+    description: "One row per customer — lifetime value, RFM tiers, and balance."
+    columns:
+      - name: customer_guid
+        tests: [not_null, unique]
+
+  - name: gold_product_performance
+    description: "One row per item — revenue, margin, and velocity metrics."
+    columns:
+      - name: item_guid
+        tests: [not_null, unique]
+
+  - name: gold_sales_order_flat
+    description: "Fully denormalised line-level fact table for Power BI / ad-hoc queries."
+    columns:
+      - name: line_guid
+        tests: [not_null, unique]
