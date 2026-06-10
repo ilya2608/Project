@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BC → Fabric Warehouse — Pipeline Swimlane</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a1a;
+    padding: 32px;
+  }
+
+  header { margin-bottom: 28px; }
+  header h1 { font-size: 1.65rem; font-weight: 700; }
+  header p  { margin-top: 6px; color: #555; font-size: 0.95rem; }
+
+  section { background: #fff; border-radius: 14px; padding: 28px 32px;
+            box-shadow: 0 2px 14px rgba(0,0,0,0.07); margin-bottom: 28px; }
+  section h2 { font-size: 1rem; font-weight: 700; letter-spacing: 0.04em;
+               text-transform: uppercase; color: #444; margin-bottom: 18px; }
+
+  /* ── legend ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; }
+  .legend-item { display: flex; align-items: center; gap: 7px;
+                 font-size: 0.8rem; font-weight: 500; color: #333; }
+  .dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── diagram scroll wrapper ── */
+  .diagram-scroll { overflow-x: auto; }
+  .mermaid { min-width: 900px; }
+
+  /* ── table ── */
+  table { width: 100%; border-collapse: collapse; font-size: 0.855rem; }
+  thead tr { background: #f7f7f7; }
+  thead th { padding: 11px 14px; text-align: left; font-size: 0.75rem;
+             font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+             color: #555; border-bottom: 2px solid #e5e5e5; }
+  tbody td { padding: 12px 14px; border-bottom: 1px solid #efefef; vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #fafafa; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px;
+           font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+  .badge-src    { background: #E8F4F8; color: #1a5f8a; border: 1px solid #b0d8ef; }
+  .badge-nb     { background: #EDF5EC; color: #2e6b2a; border: 1px solid #a8d9a3; }
+  .badge-bronze { background: #FEF0D5; color: #7c3a00; border: 1px solid #f0c580; }
+  .badge-silver { background: #E0EFFF; color: #1E3A5F; border: 1px solid #90b8e0; }
+  .badge-gold   { background: #FEFCBF; color: #5a3500; border: 1px solid #d4af37; }
+
+  code { background: #f0f0f0; padding: 1px 6px; border-radius: 4px;
+         font-size: 0.82rem; font-family: 'Menlo','Consolas',monospace; }
+  .model { font-family: 'Menlo','Consolas',monospace; font-weight: 700;
+           font-size: 0.85rem; }
+  ul { padding-left: 17px; }
+  ul li { margin-bottom: 4px; line-height: 1.5; }
+  .src-col { color: #555; font-size: 0.82rem; line-height: 1.8; }
+
+  .note { font-size: 0.8rem; color: #777; margin-top: 12px;
+          border-top: 1px solid #eee; padding-top: 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Business Central → Fabric Warehouse Pipeline</h1>
+  <p>Swimlane overview · Use the reference table to locate any transformation instantly.</p>
+</header>
+
+<!-- ══════════════════════════════════ SWIMLANE ══════════════════════════════════ -->
+<section>
+  <h2>Pipeline Swimlane</h2>
+
+  <div class="legend">
+    <div class="legend-item"><div class="dot" style="background:#5B9BD5"></div> Source (Business Central)</div>
+    <div class="legend-item"><div class="dot" style="background:#5FAD56"></div> Fabric Notebook (Ingestion)</div>
+    <div class="legend-item"><div class="dot" style="background:#CD7F32"></div> Bronze — raw / immutable</div>
+    <div class="legend-item"><div class="dot" style="background:#4A90A4"></div> Silver — clean &amp; conform (dbt)</div>
+    <div class="legend-item"><div class="dot" style="background:#D4AF37"></div> Gold — aggregate &amp; enrich (dbt)</div>
+    <div class="legend-item"><div class="dot" style="background:#9B5DE5"></div> Consumers</div>
+  </div>
+
+  <div class="diagram-scroll">
+  <div class="mermaid">
+%%{init: {"theme": "base", "themeVariables": {"fontSize":"13px","primaryColor":"#E8F4F8","edgeLabelBackground":"#fff"}} }%%
+flowchart LR
+
+  classDef src    fill:#E8F4F8,stroke:#5B9BD5,color:#0a3d62,font-weight:600
+  classDef nb     fill:#EDF5EC,stroke:#5FAD56,color:#1a3d17,font-weight:600
+  classDef bronze fill:#FEF0D5,stroke:#CD7F32,color:#5c2e00,font-weight:600
+  classDef silver fill:#E0EFFF,stroke:#4A90A4,color:#1E3A5F,font-weight:600
+  classDef gold   fill:#FEFCBF,stroke:#D4AF37,color:#4a3000,font-weight:600
+  classDef serve  fill:#F3E8FF,stroke:#9B5DE5,color:#2d0050,font-weight:600
+
+  subgraph SRC["☁️  Business Central  (Source System)"]
+    direction TB
+    SRC_C["Customer API\n/customers"]
+    SRC_I["Item API\n/items"]
+    SRC_H["Sales Orders API\n/salesOrders"]
+    SRC_L["Sales Lines API\n/salesOrderLines"]
+  end
+
+  subgraph NB["📓  Fabric Notebook  (Bronze Ingestion)"]
+    direction TB
+    NB1["① OAuth 2.0 Token\nClient-credentials flow"]
+    NB2["② OData Fetch\nPaginates @odata.nextLink"]
+    NB3["③ Append metadata\n_ingested_at · _source_system"]
+    NB4["④ Spark JDBC Write\nmode=overwrite → bronze.*"]
+  end
+
+  subgraph BRZ["🗄️  Fabric Warehouse — Bronze  (Raw, Immutable)"]
+    direction TB
+    B_C[("bronze.customer")]
+    B_I[("bronze.item")]
+    B_H[("bronze.sales_order_header")]
+    B_L[("bronze.sales_order_line")]
+  end
+
+  subgraph SLV["⚙️  dbt — Silver Layer  (Clean & Conform)"]
+    direction TB
+    S_C["dim_customer\ntrim · coalesce · cast · flags"]
+    S_I["dim_item\ntrim · coalesce · cast · flags"]
+    S_H["fact_sales_order_header\ndate cast · upper · flags"]
+    S_L["fact_sales_order_line\ncast + derive gross/net amounts"]
+  end
+
+  subgraph GLD["✨  dbt — Gold Layer  (Aggregate & Enrich)"]
+    direction TB
+    G_D["gold_sales_daily\nDAILY KPIs — 3-way JOIN\norder_count · net_sales · avg_order_value"]
+    G_C["gold_customer_performance\nCUSTOMER LTV + RFM\nrecency_tier · value_tier · tenure"]
+    G_P["gold_product_performance\nPRODUCT METRICS\nmargin · velocity · L30d/L90d windows"]
+    G_F["gold_sales_order_flat\nFULL DENORM — 4-way JOIN\nPower BI semantic model source"]
+  end
+
+  subgraph SERVE["📊  Consumers"]
+    direction TB
+    PBI["Power BI\nSemantic Model"]
+    SQL["Ad-hoc SQL\nFabric Endpoint"]
+    ML["Notebooks / ML"]
+  end
+
+  %% Source → Notebook
+  SRC_C & SRC_I & SRC_H & SRC_L --> NB1
+  NB1 --> NB2 --> NB3 --> NB4
+
+  %% Notebook → Bronze
+  NB4 --> B_C & B_I & B_H & B_L
+
+  %% Bronze → Silver (1-to-1)
+  B_C --> S_C
+  B_I --> S_I
+  B_H --> S_H
+  B_L --> S_L
+
+  %% Silver → Gold (fan-in joins)
+  S_C --> G_D
+  S_H --> G_D
+  S_L --> G_D
+
+  S_C --> G_C
+  S_H --> G_C
+  S_L --> G_C
+
+  S_I --> G_P
+  S_H --> G_P
+  S_L --> G_P
+
+  S_C --> G_F
+  S_I --> G_F
+  S_H --> G_F
+  S_L --> G_F
+
+  %% Gold → Consumers
+  G_D & G_C & G_P & G_F --> PBI
+  G_F --> SQL
+  G_D & G_C --> ML
+
+  class SRC_C,SRC_I,SRC_H,SRC_L src
+  class NB1,NB2,NB3,NB4 nb
+  class B_C,B_I,B_H,B_L bronze
+  class S_C,S_I,S_H,S_L silver
+  class G_D,G_C,G_P,G_F gold
+  class PBI,SQL,ML serve
+  </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ REFERENCE TABLE ══════════════════════════════ -->
+<section>
+  <h2>Transformation Reference — Where does X happen?</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:90px">Layer</th>
+        <th style="width:200px">Model / Table</th>
+        <th style="width:180px">Reads From</th>
+        <th>Transformations Applied</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- ── NOTEBOOK ── -->
+      <tr>
+        <td><span class="badge badge-nb">Notebook</span></td>
+        <td class="model">All bronze.*</td>
+        <td class="src-col">Business Central<br>REST API v2.0</td>
+        <td><ul>
+          <li>OAuth 2.0 client-credentials token acquisition</li>
+          <li>OData page loop (<code>@odata.nextLink</code>) — handles large datasets</li>
+          <li>Spark DataFrame creation from JSON response</li>
+          <li>Append <code>_ingested_at</code> (UTC ISO-8601) and <code>_source_system = 'BusinessCentral'</code></li>
+          <li>JDBC <code>mode=overwrite</code> write to Fabric Warehouse bronze schema</li>
+        </ul></td>
+      </tr>
+
+      <!-- ── BRONZE ── -->
+      <tr>
+        <td><span class="badge badge-bronze">Bronze</span></td>
+        <td class="model">bronze.customer</td>
+        <td class="src-col">BC <code>/customers</code></td>
+        <td><ul>
+          <li><strong>No field transformation</strong> — raw BC payload stored exactly as received</li>
+          <li>Only additions: <code>_ingested_at</code>, <code>_source_system</code></li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-bronze">Bronze</span></td>
+        <td class="model">bronze.item</td>
+        <td class="src-col">BC <code>/items</code></td>
+        <td><ul>
+          <li><strong>No field transformation</strong> — raw BC payload</li>
+          <li>Only additions: <code>_ingested_at</code>, <code>_source_system</code></li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-bronze">Bronze</span></td>
+        <td class="model">bronze.sales_order_header</td>
+        <td class="src-col">BC <code>/salesOrders</code></td>
+        <td><ul>
+          <li><strong>No field transformation</strong> — raw BC payload</li>
+          <li>Only additions: <code>_ingested_at</code>, <code>_source_system</code></li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-bronze">Bronze</span></td>
+        <td class="model">bronze.sales_order_line</td>
+        <td class="src-col">BC <code>/salesOrderLines</code></td>
+        <td><ul>
+          <li><strong>No field transformation</strong> — raw BC payload</li>
+          <li>Only additions: <code>_ingested_at</code>, <code>_source_system</code></li>
+        </ul></td>
+      </tr>
+
+      <!-- ── SILVER ── -->
+      <tr>
+        <td><span class="badge badge-silver">Silver</span></td>
+        <td class="model">dim_customer</td>
+        <td class="src-col"><code>bronze.customer</code></td>
+        <td><ul>
+          <li><code>trim()</code> applied to every string column</li>
+          <li><code>COALESCE</code> nulls → empty string defaults for all address / contact fields</li>
+          <li><code>UPPER(currencyCode)</code>, default <code>'LCY'</code> when null</li>
+          <li><code>LOWER(email)</code></li>
+          <li><code>is_blocked</code> → <code>INT 0/1</code> derived from <code>blocked IN ('All','Ship','Invoice')</code></li>
+          <li><code>creditLimit</code>, <code>balance</code> → <code>DECIMAL(18,2)</code></li>
+          <li><code>lastModifiedDateTime</code> → <code>DATETIME2(0)</code></li>
+          <li>Filter: <code>WHERE id IS NOT NULL</code></li>
+          <li>Add <code>_dbt_updated_at = GETUTCDATE()</code></li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-silver">Silver</span></td>
+        <td class="model">dim_item</td>
+        <td class="src-col"><code>bronze.item</code></td>
+        <td><ul>
+          <li><code>trim()</code> on all strings</li>
+          <li><code>COALESCE type → 'Inventory'</code>, <code>itemCategoryCode → 'UNCATEGORISED'</code>, <code>baseUoM → 'PCS'</code></li>
+          <li><code>unitPrice</code>, <code>unitCost</code> → <code>DECIMAL(18,4)</code></li>
+          <li><code>inventory</code> → <code>DECIMAL(18,4)</code></li>
+          <li><code>is_blocked</code> flag → <code>INT 0/1</code></li>
+          <li><code>lastModifiedDateTime</code> → <code>DATETIME2(0)</code></li>
+          <li>Filter: <code>WHERE id IS NOT NULL</code></li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-silver">Silver</span></td>
+        <td class="model">fact_sales_order_header</td>
+        <td class="src-col"><code>bronze.sales_order_header</code></td>
+        <td><ul>
+          <li><code>orderDate</code>, <code>postingDate</code>, <code>requestedDeliveryDate</code> → <code>DATE</code></li>
+          <li><code>COALESCE(postingDate, orderDate)</code> — fallback when posting date is null</li>
+          <li><code>UPPER(currencyCode)</code>, default <code>'LCY'</code></li>
+          <li>All amount columns → <code>DECIMAL(18,2)</code> with <code>COALESCE(x, 0)</code></li>
+          <li><code>is_released</code> → <code>INT 0/1</code> derived from <code>status = 'Released'</code></li>
+          <li>All ship-to fields <code>COALESCE → ''</code></li>
+          <li><code>lastModifiedDateTime</code> → <code>DATETIME2(0)</code></li>
+          <li>Filter: <code>WHERE id IS NOT NULL</code></li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-silver">Silver</span></td>
+        <td class="model">fact_sales_order_line</td>
+        <td class="src-col"><code>bronze.sales_order_line</code></td>
+        <td><ul>
+          <li><code>CAST(sequence AS INT)</code></li>
+          <li><code>quantity</code>, <code>unitPrice</code> → <code>DECIMAL(18,4)</code></li>
+          <li><code>discountAmount</code>, <code>lineAmount</code> → <code>DECIMAL(18,2)</code></li>
+          <li><code>discountPercent</code>, <code>taxPercent</code> → <code>DECIMAL(5,2)</code></li>
+          <li><strong>Derived</strong>: <code>gross_line_amount = quantity × unitPrice</code></li>
+          <li><strong>Derived</strong>: <code>net_line_amount = quantity × unitPrice − discountAmount</code></li>
+          <li><code>shipmentDate</code> → <code>DATE</code></li>
+          <li>Filter: <code>WHERE id IS NOT NULL</code></li>
+        </ul></td>
+      </tr>
+
+      <!-- ── GOLD ── -->
+      <tr>
+        <td><span class="badge badge-gold">Gold</span></td>
+        <td class="model">gold_sales_daily</td>
+        <td class="src-col">
+          <code>fact_sales_order_header</code><br>
+          <code>fact_sales_order_line</code><br>
+          <code>dim_customer</code>
+        </td>
+        <td><ul>
+          <li>3-way JOIN: header LEFT JOIN line, LEFT JOIN customer</li>
+          <li><code>GROUP BY</code> <code>order_date</code> · <code>country_code</code> · <code>currency_code</code> · <code>salesperson_code</code></li>
+          <li>Aggregate: <code>COUNT(DISTINCT order_guid)</code>, <code>COUNT(DISTINCT customer_guid)</code></li>
+          <li><code>SUM</code> qty, gross_sales, discounts, net_sales, tax</li>
+          <li><strong>Derived</strong>: <code>avg_order_value = net_sales / NULLIF(order_count, 0)</code></li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-gold">Gold</span></td>
+        <td class="model">gold_customer_performance</td>
+        <td class="src-col">
+          <code>dim_customer</code><br>
+          <code>fact_sales_order_header</code><br>
+          <code>fact_sales_order_line</code>
+        </td>
+        <td><ul>
+          <li>Intermediate CTE aggregates order+line by <code>customer_guid</code> + <code>currency_code</code></li>
+          <li>LEFT JOIN customer ⟕ aggregated block</li>
+          <li>Lifetime totals: <code>total_orders</code>, <code>gross_revenue</code>, <code>net_revenue</code>, <code>total_qty</code></li>
+          <li><code>first_order_date</code>, <code>last_order_date</code>, <code>customer_tenure_days</code></li>
+          <li><strong>Derived</strong>: <code>recency_tier</code> — Recent (≤30d) / Active (≤90d) / At Risk (≤180d) / Lapsed</li>
+          <li><strong>Derived</strong>: <code>value_tier</code> — High (≥100k) / Mid (≥10k) / Low</li>
+          <li><strong>Derived</strong>: <code>avg_order_value</code>, <code>days_since_last_order</code></li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-gold">Gold</span></td>
+        <td class="model">gold_product_performance</td>
+        <td class="src-col">
+          <code>dim_item</code><br>
+          <code>fact_sales_order_header</code><br>
+          <code>fact_sales_order_line</code>
+        </td>
+        <td><ul>
+          <li>JOIN line + header, then LEFT JOIN item by <code>item_guid</code></li>
+          <li>Aggregate by <code>item_guid</code> + <code>currency_code</code></li>
+          <li>Rolling windows (conditional SUM): <code>net_revenue_l30d</code>, <code>net_revenue_l90d</code>, <code>qty_sold_l30d</code></li>
+          <li><strong>Derived</strong>: <code>gross_margin = net_revenue − (unit_cost × total_qty)</code></li>
+          <li><strong>Derived</strong>: <code>gross_margin_pct</code></li>
+          <li><strong>Derived</strong>: <code>avg_discount_pct = total_discounts / gross_revenue × 100</code></li>
+          <li><strong>Derived</strong>: <code>velocity_tier</code> — Fast Moving (&gt;100 qty/30d) / Regular / Slow Moving / No Sales</li>
+          <li><code>days_since_last_sale</code></li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-gold">Gold</span></td>
+        <td class="model">gold_sales_order_flat</td>
+        <td class="src-col">
+          <code>fact_sales_order_header</code><br>
+          <code>fact_sales_order_line</code><br>
+          <code>dim_customer</code><br>
+          <code>dim_item</code>
+        </td>
+        <td><ul>
+          <li>4-way JOIN (one row per line): header JOIN line, LEFT JOIN customer, LEFT JOIN item</li>
+          <li>Date part columns: <code>order_year</code>, <code>order_month</code>, <code>order_quarter</code>, <code>order_year_month</code></li>
+          <li><strong>Derived</strong>: <code>line_cost = quantity × unit_cost</code></li>
+          <li><strong>Derived</strong>: <code>line_gross_margin = net_line_amount − line_cost</code></li>
+          <li><strong>Derived</strong>: <code>line_gross_margin_pct</code></li>
+          <li>Order-level totals repeated per line (enables any slice in Power BI)</li>
+          <li>Carries all customer and item attributes denormalised — no further joins needed</li>
+        </ul></td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <p class="note">
+    <strong>Naming conventions:</strong>
+    Bronze tables use camelCase from the BC API payload.
+    Silver models rename to <code>snake_case</code> and add <code>_dbt_updated_at</code>.
+    Gold models further add computed / aggregated columns with no additional renaming.
+  </p>
+</section>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, flowchart: { useMaxWidth: false, htmlLabels: true } });
+</script>
+</body>
+</html>
