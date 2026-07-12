@@ -1,0 +1,429 @@
+# Home Assistant Lovelace Dashboard — Lights & Security focus
+#
+# HOW TO IMPORT:
+#   1. In the Home Assistant app/web UI: Settings -> Dashboards -> "+ Add Dashboard"
+#      -> "New dashboard from scratch".
+#   2. Open the new dashboard, tap the three-dot menu (top right) -> "Edit Dashboard"
+#      -> three-dot menu again -> "Edit in YAML".
+#   3. Delete the placeholder content and paste this entire file, then Save.
+#
+# NOTES:
+#   - Entity IDs below are best-effort guesses slugified from your device names
+#     (Home Assistant's standard convention, e.g. "Bathroom Light" -> light.bathroom_light).
+#     They were not retrievable directly via the MCP connector (it only exposes friendly
+#     names/areas/state, not raw entity_ids). If a tile shows "Entity not available",
+#     open that card in the visual editor and re-pick the entity from the autocomplete
+#     list -- it's a 5-second fix per entity, and you'll likely need to do this for a
+#     handful of them.
+#   - Entities that were "unavailable" at discovery time (e.g. some lights, Master
+#     Bedroom TV) are included on purpose -- they'll light up automatically once back
+#     online, no dashboard edit needed.
+#   - Living Room TV and Soundbar each appeared twice in the raw data (duplicate
+#     integration exposure) -- only one of each is included here, per your review.
+#   - Motion Sensor - AC4 is placed under Bedroom (you confirmed that's its real location,
+#     even though the raw data didn't tag it with an area).
+#   - Small Blind, Big Blind, and Sunscreen are three independent covers -- each has its
+#     own separate control, no grouping.
+#   - The "Other" tab (media players, vacuum, switches, to-do list) is intentionally last
+#     and kept compact, since your focus is lights + security; sensors are secondary.
+
+title: Home
+views:
+  # ------------------------------------------------------------------
+  # 1. HOME — whole-house security: presence + covers
+  # ------------------------------------------------------------------
+  - title: Home
+    path: home
+    icon: mdi:shield-home
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Security
+            icon: mdi:shield-check
+          - type: tile
+            entity: binary_sensor.iphone_presence
+            name: Ilya's iPhone
+            icon: mdi:cellphone
+          - type: tile
+            entity: cover.big_blind
+            name: Big Blind
+            features:
+              - type: cover-open-close
+          - type: tile
+            entity: cover.sunscreen
+            name: Sunscreen
+            features:
+              - type: cover-open-close
+
+  # ------------------------------------------------------------------
+  # 2. LIVING ROOM
+  # ------------------------------------------------------------------
+  - title: Living Room
+    path: living-room
+    icon: mdi:sofa
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lights
+            icon: mdi:lightbulb-group
+          - type: tile
+            entity: light.green_lamp
+            name: Green Lamp
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.living_room_lights
+            name: Living Room Lights
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.sofa_light
+            name: Sofa Light
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.tv
+            name: TV Light
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.standing_lamp
+            name: Standing Lamp
+            features:
+              - type: light-brightness
+      - type: grid
+        cards:
+          - type: heading
+            heading: Scenes
+            icon: mdi:palette
+          - type: tile
+            entity: scene.tv_stadium
+            name: TV Stadium
+            icon: mdi:television-classic
+          - type: tile
+            entity: scene.table_bright
+            name: Table Bright
+          - type: tile
+            entity: scene.table_dimmed
+            name: Table Dimmed
+          - type: tile
+            entity: scene.table_read
+            name: Table Read
+          - type: tile
+            entity: scene.table_relax
+            name: Table Relax
+          - type: tile
+            entity: scene.table_nightlight
+            name: Table Nightlight
+
+  # ------------------------------------------------------------------
+  # 3. BEDROOM
+  # ------------------------------------------------------------------
+  - title: Bedroom
+    path: bedroom
+    icon: mdi:bed
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lights
+            icon: mdi:lightbulb-group
+          - type: tile
+            entity: light.bedroom_light
+            name: Bedroom Light
+            features:
+              - type: light-brightness
+      - type: grid
+        cards:
+          - type: heading
+            heading: Security & Sensors
+            icon: mdi:shield-check
+          - type: tile
+            entity: binary_sensor.motion_sensor_ac4_motion
+            name: Motion
+            icon: mdi:motion-sensor
+          - type: tile
+            entity: sensor.motion_sensor_ac4_temperature
+            name: Temperature
+            icon: mdi:thermometer
+      - type: grid
+        cards:
+          - type: heading
+            heading: Scenes
+            icon: mdi:palette
+          - type: tile
+            entity: scene.bedroom_concentrate
+            name: Concentrate
+          - type: tile
+            entity: scene.bedroom_energize
+            name: Energize
+          - type: tile
+            entity: scene.bedroom_read
+            name: Read
+          - type: tile
+            entity: scene.bedroom_relax
+            name: Relax
+          - type: tile
+            entity: scene.bedroom_dimmed
+            name: Dimmed
+
+  # ------------------------------------------------------------------
+  # 4. MASTER BEDROOM
+  # ------------------------------------------------------------------
+  - title: Master Bedroom
+    path: master-bedroom
+    icon: mdi:bed-king
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lights
+            icon: mdi:lightbulb-group
+          - type: tile
+            entity: light.master_bedroom_ceiling
+            name: Ceiling
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.master_bedroom_ledstrip
+            name: Ledstrip
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.mirror_light
+            name: Mirror Light
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.nightlight
+            name: Nightlight
+            features:
+              - type: light-brightness
+      - type: grid
+        cards:
+          - type: heading
+            heading: Scenes
+            icon: mdi:palette
+          - type: tile
+            entity: scene.master_bedroom_nightlight
+            name: Nightlight Scene
+
+  # ------------------------------------------------------------------
+  # 5. KITCHEN
+  # ------------------------------------------------------------------
+  - title: Kitchen
+    path: kitchen
+    icon: mdi:chef-hat
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lights
+            icon: mdi:lightbulb-group
+          - type: tile
+            entity: light.kitchen_light
+            name: Kitchen Light
+            features:
+              - type: light-brightness
+
+  # ------------------------------------------------------------------
+  # 6. DINING ROOM
+  # ------------------------------------------------------------------
+  - title: Dining Room
+    path: dining-room
+    icon: mdi:silverware-fork-knife
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lights
+            icon: mdi:lightbulb-group
+          - type: tile
+            entity: light.dining_room_lights
+            name: Dining Room Lights
+            features:
+              - type: light-brightness
+      - type: grid
+        cards:
+          - type: heading
+            heading: Security
+            icon: mdi:shield-check
+          - type: tile
+            entity: cover.small_blind
+            name: Small Blind
+            features:
+              - type: cover-open-close
+
+  # ------------------------------------------------------------------
+  # 7. BATHROOM
+  # ------------------------------------------------------------------
+  - title: Bathroom
+    path: bathroom
+    icon: mdi:shower
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lights
+            icon: mdi:lightbulb-group
+          - type: tile
+            entity: light.bathroom_light
+            name: Bathroom Light
+            features:
+              - type: light-brightness
+
+  # ------------------------------------------------------------------
+  # 8. HALLWAY
+  # ------------------------------------------------------------------
+  - title: Hallway
+    path: hallway
+    icon: mdi:door-open
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lights
+            icon: mdi:lightbulb-group
+          - type: tile
+            entity: light.hallway_light
+            name: Hallway Light
+            features:
+              - type: light-brightness
+      - type: grid
+        cards:
+          - type: heading
+            heading: Security & Sensors
+            icon: mdi:shield-check
+          - type: tile
+            entity: binary_sensor.hue_motion_sensor_motion
+            name: Motion
+            icon: mdi:motion-sensor
+          - type: tile
+            entity: sensor.hue_motion_sensor_temperature
+            name: Temperature
+            icon: mdi:thermometer
+      - type: grid
+        cards:
+          - type: heading
+            heading: Scenes
+            icon: mdi:palette
+          - type: tile
+            entity: scene.hallway_bright
+            name: Bright
+          - type: tile
+            entity: scene.hallway_dimmed
+            name: Dimmed
+
+  # ------------------------------------------------------------------
+  # 9. PANTRY
+  # ------------------------------------------------------------------
+  - title: Pantry
+    path: pantry
+    icon: mdi:fridge-outline
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lights
+            icon: mdi:lightbulb-group
+          - type: tile
+            entity: light.pantry_light
+            name: Pantry Light
+            features:
+              - type: light-brightness
+
+  # ------------------------------------------------------------------
+  # 10. GARAGE — sensors only (3D printer monitoring)
+  # ------------------------------------------------------------------
+  - title: Garage
+    path: garage
+    icon: mdi:garage
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: 3D Printer Sensors
+            icon: mdi:printer-3d
+          - type: tile
+            entity: sensor.prusa_mk4_heatbed_temperature
+            name: Heatbed Temperature
+            icon: mdi:thermometer
+            features:
+              - type: area-controls
+          - type: tile
+            entity: sensor.prusa_mk4_nozzle_temperature
+            name: Nozzle Temperature
+            icon: mdi:thermometer
+
+  # ------------------------------------------------------------------
+  # 11. OTHER — deprioritized: media, vacuum, switches, to-do
+  # ------------------------------------------------------------------
+  - title: Other
+    path: other
+    icon: mdi:dots-horizontal-circle-outline
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Media Players
+            icon: mdi:speaker
+          - type: tile
+            entity: media_player.all_speakers
+            name: All Speakers
+          - type: tile
+            entity: media_player.spotify_ilya_bondarenko
+            name: Spotify
+          - type: tile
+            entity: media_player.bedroom_display
+            name: Bedroom Display
+          - type: tile
+            entity: media_player.bedroom_speaker
+            name: Bedroom Speaker
+          - type: tile
+            entity: media_player.kitchen_display
+            name: Kitchen Display
+          - type: tile
+            entity: media_player.bathroom_speaker
+            name: Bathroom Speaker
+          - type: tile
+            entity: media_player.living_room_tv
+            name: Living Room TV
+          - type: tile
+            entity: media_player.playstation_5
+            name: PlayStation 5
+          - type: tile
+            entity: media_player.soundbar
+            name: Soundbar
+          - type: tile
+            entity: media_player.master_bedroom_tv
+            name: Master Bedroom TV
+      - type: grid
+        cards:
+          - type: heading
+            heading: Other Devices
+            icon: mdi:robot-vacuum
+          - type: tile
+            entity: vacuum.bob
+            name: Bob
+          - type: tile
+            entity: switch.light_sensor_living_room_tv
+            name: Light Sensor Switch
+          - type: tile
+            entity: switch.sound_sensor_living_room_tv
+            name: Sound Sensor Switch
+          - type: todo-list
+            entity: todo.shopping_list
+            title: Shopping List
